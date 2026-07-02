@@ -39,11 +39,11 @@ CloseButton.Image = ASSET_FECHAR
 CloseButton.ZIndex = 5
 CloseButton.Parent = MainFrame
 
--- Título Principal (Botão de Minimizar)
+-- Título Principal (Botão de Minimizar - Ajustado para a Fonte Robusta)
 local Title = Instance.new("TextButton")
 Title.Name = "Title"
-Title.Size = UDim2.new(1, -32, 0, 25)
-Title.Position = UDim2.new(0, 6, 0, 10)
+Title.Size = UDim2.new(1, -36, 0, 25)
+Title.Position = UDim2.new(0, 8, 0, 10)
 Title.BackgroundTransparency = 1
 Title.Text = "Summoner Vehicles V1 KILL"
 Title.Font = Enum.Font.SpecialElite
@@ -164,8 +164,8 @@ Title.MouseButton1Click:Connect(function()
     TweenService:Create(MainFrame, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = targetSize}):Play()
 end)
 
--- [[ COORDENADA ÚNICA DE DESTINO ]]
-local COORDENADA_UNICA = CFrame.new(89, 3, 579) * CFrame.fromEulerAnglesXYZ(0, math.rad(269), 0)
+-- [[ NOVA COORDENADA DE DESTINO ATUALIZADA (IMAGEM RECENTE) ]]
+local COORDENADA_UNICA = CFrame.new(11, -30, -48) * CFrame.fromEulerAnglesXYZ(0, math.rad(340), 0)
 
 -- [[ FUNÇÃO PRINCIPAL DE TELETRANSPORTE E DISPARO ]]
 local function executarSpawnCarro(veiculoID)
