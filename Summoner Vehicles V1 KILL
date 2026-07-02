@@ -1,0 +1,285 @@
+-- [[ CONFIGURAÇÕES DA INTERFACE ]]
+local ASSET_FECHAR = "rbxassetid://89783450460085"
+local ASSET_SOL = "rbxassetid://85337967115080"
+
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TweenService = game:GetService("TweenService")
+local Players = game:GetService("Players")
+local Workspace = game:GetService("Workspace")
+local UserInputService = game:GetService("UserInputService")
+
+local LocalPlayer = Players.LocalPlayer
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+
+-- Instanciação da ScreenGui principal
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "SpwnRemotesGui"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.Parent = PlayerGui
+
+-- Main Frame (Tamanho Fixo Padrão Aberto)
+local MainFrame = Instance.new("Frame")
+MainFrame.Name = "MainFrame"
+MainFrame.Size = UDim2.new(0, 240, 0, 240)
+MainFrame.Position = UDim2.new(0.5, -120, 0.5, -120)
+MainFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+MainFrame.BorderSizePixel = 1
+MainFrame.BorderColor3 = Color3.fromRGB(255, 255, 255)
+MainFrame.Active = true
+MainFrame.ClipsDescendants = true
+MainFrame.Parent = ScreenGui
+
+-- Botão Fechar (X)
+local CloseButton = Instance.new("ImageButton")
+CloseButton.Name = "CloseButton"
+CloseButton.Size = UDim2.new(0, 24, 0, 24)
+CloseButton.Position = UDim2.new(1, -28, 0, 10)
+CloseButton.BackgroundTransparency = 1
+CloseButton.Image = ASSET_FECHAR
+CloseButton.ZIndex = 5
+CloseButton.Parent = MainFrame
+
+-- Título Principal (Botão de Minimizar)
+local Title = Instance.new("TextButton")
+Title.Name = "Title"
+Title.Size = UDim2.new(1, -32, 0, 25)
+Title.Position = UDim2.new(0, 6, 0, 10)
+Title.BackgroundTransparency = 1
+Title.Text = "Summoner Vehicles V1 KILL"
+Title.Font = Enum.Font.SpecialElite
+Title.TextSize = 15
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.TextXAlignment = Enum.TextXAlignment.Left
+Title.ZIndex = 4
+Title.Parent = MainFrame
+
+-- Subtítulo (dashboard)
+local Subtitle = Instance.new("TextLabel")
+Subtitle.Name = "Subtitle"
+Subtitle.Size = UDim2.new(1, 0, 0, 15)
+Subtitle.Position = UDim2.new(0, 0, 0, 34)
+Subtitle.BackgroundTransparency = 1
+Subtitle.Text = "dashboard"
+Subtitle.Font = Enum.Font.SpecialElite
+Subtitle.TextSize = 14
+Subtitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+Subtitle.TextXAlignment = Enum.TextXAlignment.Center
+Subtitle.ZIndex = 3
+Subtitle.Parent = MainFrame
+
+-- Símbolo do Sol (Centralização Absoluta)
+local SolBackground = Instance.new("ImageLabel")
+SolBackground.Name = "SolBackground"
+SolBackground.AnchorPoint = Vector2.new(0.5, 0.5)
+SolBackground.Size = UDim2.new(0, 130, 0, 130)
+SolBackground.Position = UDim2.new(0.5, 0, 0.5, 15)
+SolBackground.BackgroundTransparency = 1
+SolBackground.Image = ASSET_SOL
+SolBackground.ImageColor3 = Color3.fromRGB(45, 45, 45)
+SolBackground.ZIndex = 1
+SolBackground.Parent = MainFrame
+
+-- Linha Branca Vertical Estática
+local RightLine = Instance.new("Frame")
+RightLine.Name = "RightLine"
+RightLine.Size = UDim2.new(0, 2, 0, 145)
+RightLine.Position = UDim2.new(1, -18, 0, 75)
+RightLine.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+RightLine.BorderSizePixel = 0
+RightLine.ZIndex = 2
+RightLine.Parent = MainFrame
+
+-- Conteúdo/Botões Container
+local ButtonsContainer = Instance.new("Frame")
+ButtonsContainer.Name = "ButtonsContainer"
+ButtonsContainer.Size = UDim2.new(0, 190, 0, 145)
+ButtonsContainer.Position = UDim2.new(0, 14, 0, 75)
+ButtonsContainer.BackgroundTransparency = 1
+ButtonsContainer.ZIndex = 2
+ButtonsContainer.Parent = MainFrame
+
+local UIListLayout = Instance.new("UIListLayout")
+UIListLayout.Parent = ButtonsContainer
+UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+UIListLayout.Padding = UDim.new(0, 5)
+
+-- [[ SISTEMA PERSONALIZADO PARA ARRASTAR (MOBILE/PC) ]]
+local function habilitarArrasto(frame)
+    local dragging, dragInput, dragStart, startPos
+
+    local function update(input)
+        local delta = input.Position - dragStart
+        frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+
+    frame.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            dragStart = input.Position
+            startPos = frame.Position
+
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                end
+            end)
+        end
+    end)
+
+    frame.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+            dragInput = input
+        end
+    end)
+
+    UserInputService.InputChanged:Connect(function(input)
+        if input == dragInput and dragging then
+            update(input)
+        end
+    end)
+end
+habilitarArrasto(MainFrame)
+
+-- [[ SISTEMA DE MINIMIZAR / EXPANDIR ]]
+local minimizado = false
+
+Title.MouseButton1Click:Connect(function()
+    minimizado = not minimizado
+    
+    local targetSize
+    if minimizado then
+        targetSize = UDim2.new(0, 240, 0, 50)
+        Subtitle.Visible = false
+        SolBackground.Visible = false
+        RightLine.Visible = false
+        ButtonsContainer.Visible = false
+    else
+        targetSize = UDim2.new(0, 240, 0, 240)
+        Subtitle.Visible = true
+        SolBackground.Visible = true
+        RightLine.Visible = true
+        ButtonsContainer.Visible = true
+    end
+    
+    TweenService:Create(MainFrame, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = targetSize}):Play()
+end)
+
+-- [[ COORDENADA ÚNICA DE DESTINO ]]
+local COORDENADA_UNICA = CFrame.new(89, 3, 579) * CFrame.fromEulerAnglesXYZ(0, math.rad(269), 0)
+
+-- [[ FUNÇÃO PRINCIPAL DE TELETRANSPORTE E DISPARO ]]
+local function executarSpawnCarro(veiculoID)
+    local character = LocalPlayer.Character
+    local rootPart = character and character:FindFirstChild("HumanoidRootPart")
+    local remote = ReplicatedStorage:FindFirstChild("RE") and ReplicatedStorage.RE:FindFirstChild("1Ca1r")
+    
+    if rootPart and remote then
+        local posicaoOriginal = rootPart.CFrame
+        local velocidadeOriginal = rootPart.AssemblyLinearVelocity
+        
+        rootPart.CFrame = COORDENADA_UNICA
+        task.wait(2)
+        
+        local args = {"PickingCar", veiculoID, "Event"}
+        remote:FireServer(unpack(args))
+        
+        task.wait(0.15)
+        rootPart.CFrame = posicaoOriginal
+        rootPart.AssemblyLinearVelocity = velocidadeOriginal
+    end
+end
+
+-- [[ LÓGICA DE INTERAÇÃO COM HELICÓPTERO A DISTÂNCIA ]]
+local function obterSpawnerMaisProximo()
+    local character = LocalPlayer.Character
+    local meuHRP = character and character:FindFirstChild("HumanoidRootPart")
+    if not meuHRP then return nil end
+    
+    local menorDistancia = math.huge
+    local spawnerAlvo = nil
+    
+    for _, obj in pairs(Workspace:GetDescendants()) do
+        if obj.Name == "AirVehicleSpawner" and obj:IsA("Model") then
+            local pPart = obj.PrimaryPart or obj:FindFirstChild("Button") or obj:FindFirstChildOfClass("BasePart")
+            if pPart then
+                local dist = (meuHRP.Position - pPart.Position).Magnitude
+                if dist < menorDistancia then
+                    menorDistancia = dist
+                    spawnerAlvo = obj
+                end
+            end
+        end
+    end
+    return spawnerAlvo
+end
+
+local function clonarPainelHelicoptero()
+    for _, objeto in pairs(Workspace:GetDescendants()) do
+        if objeto:IsA("ClickDetector") or objeto:IsA("ProximityPrompt") then
+            objeto.MaxActivationDistance = math.huge
+        end
+    end
+
+    local spawnerProximo = obterSpawnerMaisProximo()
+    if spawnerProximo then
+        local botaoFisico = spawnerProximo:FindFirstChild("Button")
+        if botaoFisico then
+            local clickDetector = botaoFisico:FindFirstChildOfClass("ClickDetector")
+            local proximityPrompt = botaoFisico:FindFirstChildOfClass("ProximityPrompt")
+            
+            if clickDetector and fireclickdetector then
+                fireclickdetector(clickDetector)
+            elseif proximityPrompt and fireproximityprompt then
+                fireproximityprompt(proximityPrompt)
+            end
+        end
+    end
+end
+
+-- [[ CONSTRUTOR DE BOTÕES INTERATIVOS ]]
+local function criarBotaoVeiculo(texto, veiculoID, tipoAcao, ordem)
+    local TextButton = Instance.new("TextButton")
+    TextButton.Name = texto .. "Btn"
+    TextButton.Size = UDim2.new(1, 0, 0, 24)
+    TextButton.BackgroundTransparency = 1
+    TextButton.Text = texto
+    TextButton.Font = Enum.Font.SpecialElite
+    TextButton.TextSize = 18
+    TextButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    TextButton.TextXAlignment = Enum.TextXAlignment.Left
+    TextButton.LayoutOrder = ordem
+    TextButton.ZIndex = 3
+    TextButton.Parent = ButtonsContainer
+
+    -- Efeitos Hover
+    TextButton.MouseEnter:Connect(function()
+        TweenService:Create(TextButton, TweenInfo.new(0.12), {TextColor3 = Color3.fromRGB(160, 160, 160)}):Play()
+    end)
+    TextButton.MouseLeave:Connect(function()
+        TweenService:Create(TextButton, TweenInfo.new(0.12), {TextColor3 = Color3.fromRGB(255, 255, 255)}):Play()
+    end)
+
+    -- Clique
+    TextButton.MouseButton1Click:Connect(function()
+        if tipoAcao == "Carro" then
+            executarSpawnCarro(veiculoID)
+        elseif tipoAcao == "Helicoptero" then
+            clonarPainelHelicoptero()
+        end
+    end)
+end
+
+-- [[ GERAÇÃO DA LISTA DE BOTÕES ]]
+criarBotaoVeiculo("Helicópters", "Helicopter", "Helicoptero", 1)
+criarBotaoVeiculo("Lego", "LEGO_Gamecar", "Carro", 2)
+criarBotaoVeiculo("Car egg", "EasterBigOld", "Carro", 3)
+criarBotaoVeiculo("OlympicsCar", "Bobsled", "Carro", 4)
+
+-- [[ ANIMAÇÃO DE FECHAMENTO ]]
+CloseButton.MouseButton1Click:Connect(function()
+    local fadeOut = TweenService:Create(MainFrame, TweenInfo.new(0.2), {Size = UDim2.new(0, 0, 0, 0), Position = UDim2.new(0.5, 0, 0.5, 0)})
+    fadeOut:Play()
+    fadeOut.Completed:Connect(function()
+        ScreenGui:Destroy()
+    end)
+end)
