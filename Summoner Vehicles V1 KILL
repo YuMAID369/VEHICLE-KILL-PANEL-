@@ -39,7 +39,7 @@ CloseButton.Image = ASSET_FECHAR
 CloseButton.ZIndex = 5
 CloseButton.Parent = MainFrame
 
--- Título Principal (Botão de Minimizar - Ajustado para a Fonte Robusta)
+-- Título Principal (Botão de Minimizar)
 local Title = Instance.new("TextButton")
 Title.Name = "Title"
 Title.Size = UDim2.new(1, -36, 0, 25)
@@ -164,28 +164,25 @@ Title.MouseButton1Click:Connect(function()
     TweenService:Create(MainFrame, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = targetSize}):Play()
 end)
 
--- [[ NOVA COORDENADA DE DESTINO ATUALIZADA (IMAGEM RECENTE) ]]
-local COORDENADA_UNICA = CFrame.new(11, -30, -48) * CFrame.fromEulerAnglesXYZ(0, math.rad(340), 0)
+-- [[ NOVA COORDENADA DE DESTINO (PERMANECER NO LOCAL) ]]
+local COORDENADA_ATUALIZADA = CFrame.new(594, -58, 538) * CFrame.fromEulerAnglesXYZ(0, math.rad(268), 0)
 
--- [[ FUNÇÃO PRINCIPAL DE TELETRANSPORTE E DISPARO ]]
+-- [[ FUNÇÃO PRINCIPAL DE TELETRANSPORTE (SEM RETORNO) ]]
 local function executarSpawnCarro(veiculoID)
     local character = LocalPlayer.Character
     local rootPart = character and character:FindFirstChild("HumanoidRootPart")
     local remote = ReplicatedStorage:FindFirstChild("RE") and ReplicatedStorage.RE:FindFirstChild("1Ca1r")
     
     if rootPart and remote then
-        local posicaoOriginal = rootPart.CFrame
-        local velocidadeOriginal = rootPart.AssemblyLinearVelocity
+        -- Teletransporta para a nova coordenada
+        rootPart.CFrame = COORDENADA_ATUALIZADA
+        task.wait(2) -- Aguarda o carregamento do mapa local
         
-        rootPart.CFrame = COORDENADA_UNICA
-        task.wait(2)
-        
+        -- Dispara o Remote de spawn do veículo
         local args = {"PickingCar", veiculoID, "Event"}
         remote:FireServer(unpack(args))
         
-        task.wait(0.15)
-        rootPart.CFrame = posicaoOriginal
-        rootPart.AssemblyLinearVelocity = velocidadeOriginal
+        -- O código antigo de retorno foi removido. Você permanece aqui.
     end
 end
 
